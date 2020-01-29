@@ -1,0 +1,68 @@
+;;;======================================================
+;;;   Automotive Expert System
+;;;
+;;;     This expert system diagnoses some simple
+;;;     problems with a car.
+;;;
+;;;     CLIPS Version 6.3 Example
+;;;     Pyrule Version 0.1 Transferred
+;;;
+;;;     To execute, merely load, reset and run.
+;;;======================================================
+;
+;;;***************
+;;;* QUERY RULES *
+;;;***************
+;
+defrule determine-engine-state ('not',('engine-starts','?')) ('not',('repair','?')) => question/engine-starts/Does/the/engine/start/(yes/no)?
+;
+defrule determine-runs-normally ('engine-starts','yes') ('not',('repair','?')) => question/runs-normally/Does/the/engine/run/normally/(yes/no)?
+;
+defrule determine-rotation-state ('engine-starts','no') ('not',('repair','?')) => question/engine-rotates/Does/the/engine/rotate/(yes/no)?
+;   
+defrule determine-sluggishness ('runs-normally','no') ('not',('repair','?')) => question/engine-sluggish/Is/the/engine/sluggish/(yes/no)?
+;  
+defrule determine-misfiring ('runs-normally','no') ('not',('repair','?')) => question/engine-misfires/Does/the/engine/misfire/(yes/no)?
+;
+defrule determine-knocking ('runs-normally','no') ('not',('repair','?')) => question/engine-knocks/Does/the/engine/knock/(yes/no)?
+;
+defrule determine-low-output ('runs-normally','no') ('not',('repair','?')) => question/engine-output-low/Is/the/output/of/the/engine/low/(yes/no)?
+;
+defrule determine-gas-level ('engine-starts','no') ('engine-rotates','yes') ('not',('repair','?')) => question/tank-has-gas/Does/the/tank/have/any/gas/in/it/(yes/no)?
+;
+defrule determine-battery-state ('engine-rotates','no') ('not',('repair','?')) => question/battery-has-charge/Is/the/battery/charged/(yes/no)?
+;
+defrule determine-point-surface-state ('or',('and',('engine-starts','no'),('engine-rotates','yes')),('engine-output-low','yes')) ('not',('repair','?')) => question/point-surface-state/What/is/the/surface/state/of/the/points/(normal/burned/contaminated)?
+;
+defrule determine-conductivity-test ('engine-starts','no') ('engine-rotates','no') ('battery-has-charge','yes') ('not',('repair','?')) => question/conductivity-test-positive/Is/the/conductivity/test/for/the/ignition/coil/positive/(yes/no)?
+;
+;;;****************
+;;;* REPAIR RULES *
+;;;****************
+;
+defrule normal-engine-state-conclusions ('runs-normally','yes') ('not',('repair','?')) => assert/("repair","No/repair/needed.")
+;
+defrule engine-sluggish ('engine-sluggish','yes') ('not',('repair','?')) => assert/("repair","Clean/the/fuel/line.") 
+;
+defrule engine-misfires ('engine-misfires','yes') ('not',('repair','?')) => assert/("repair","Point/gap/adjustment.")     
+;
+defrule engine-knocks ('engine-knocks','yes') ('not',('repair','?')) => assert/("repair","Timing/adjustment.")
+;
+defrule tank-out-of-gas ('tank-has-gas','no') ('not',('repair','?')) => assert/("repair","Add/gas.")
+;
+defrule battery-dead ('battery-has-charge','no') ('not',('repair','?')) => assert/("repair","Charge/the/battery.")
+;
+defrule point-surface-state-burned ('point-surface-state','burned') ('not',('repair','?')) => assert/("repair","Replace/the/points.")
+;
+defrule point-surface-state-contaminated ('point-surface-state','contaminated') ('not',('repair','?')) => assert/("repair","Clean/the/points.")
+;
+defrule conductivity-test-positive-yes ('conductivity-test-positive','yes') ('not',('repair','?')) => assert/("repair","Repair/the/distributor/lead/wire.")
+;
+defrule conductivity-test-positive-no ('conductivity-test-positive','no') ('not',('repair','?')) => assert/("repair","Replace/the/ignition/coil.")
+;
+;;;********************************
+;;;* STARTUP AND CONCLUSION RULES *
+;;;********************************
+;
+defrule print-repair ('repair','?') => print/Suggested/Repair/Generated 
+;
